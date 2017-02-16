@@ -675,7 +675,7 @@
 {"type": "Feature","properties": { "Name":"金澤","point":531}, "geometry": { "type": "Point", "coordinates": [136.6562051,36.5613254] } },
 {"type": "Feature","properties": { "Name":"福井縣","point":35}, "geometry": { "type": "Point", "coordinates": [136.2215269,36.0651779] } },
 {"type": "Feature","properties": { "Name":"濱名湖","point":9}, "geometry": { "type": "Point", "coordinates": [137.5766661,34.7331499] } },
-{"type": "Feature","properties": { "Name":"新潟縣","point":43}, "geometry": { "type": "Point", "coordinates": [139.0230946,37.9025518] } },
+{"type": "Feature","properties": { "Name":"新潟县","point":43}, "geometry": { "type": "Point", "coordinates": [139.0230946,37.9025518] } },
 {"type": "Feature","properties": { "Name":"諏訪明神 (相模原市)","point":27}, "geometry": { "type": "Point", "coordinates": [139.3035425,35.5397101] } },
 {"type": "Feature","properties": { "Name":"村上城","point":2}, "geometry": { "type": "Point", "coordinates": [139.4849912,38.2199120] } },
 {"type": "Feature","properties": { "Name":"兼六園","point":232}, "geometry": { "type": "Point", "coordinates": [136.6626515,36.5621278] } },
