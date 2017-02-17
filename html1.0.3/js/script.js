@@ -1,16 +1,28 @@
 (function() {
     totaltime = 7200;
+    $("#content").append("<button type='button'>清除路線 </button>");
+    $("button").on("click", clear);
+
+    function clear() {
+        $('path[stroke="red"]').remove();
+        $('#route').empty();
+        $('path[stroke-opacity="1"').remove();
+        $('div[class="leaflet-marker-icon leaflet-glyph-icon leaflet-zoom-animated leaflet-interactive"]').remove();
+    }
     var m = L.map('mapID', {
-        attributionControl: false
+        attributionControl: true
     }).setView([37.978, 138.319], 6);
-    var cartodbAttribution = '<a href="https://github.com/sskingdon">sskingdon</a>, <a href="https://github.com/Sims-Liou">Sims-liou</a>, <a href="https://github.com/yuclin">yuclin</a>';
+    // var cartodbAttribution = '<a href="https://github.com/sskingdon">sskingdon</a>, <a href="https://github.com/Sims-Liou">Sims-liou</a>, <a href="https://github.com/yuclin">yuclin</a>';
     var placedic = {};
     var yoo = 0;
     var nowroute;
     var markers = L.layerGroup();
     var collist = ["#5500DD", "#5555FF", "#227700", "#880000", "#000000"];
     var weilist = ["16", "11", "8", "5", "4"];
-    var oplist=["1","1","1","1","1"];
+    var coomlist = ["第一推薦路線", "第二推薦路線", "第三推薦路線", "第四推薦路線", "第五推薦路線"];
+    var heatcolor = ['#FFEDA0', '#FED976', '#FEB24C', '#FD8D3C', '#FC4E2A', '#E31A1C'];
+    var heatname = ["0-20", "20-50", "50-100", "100-200", "200-500", "500以上"];
+    var oplist = ["1", "1", "1", "1", "1"];
     var baseMaps = [
         "Stamen.Watercolor",
         "OpenStreetMap.Mapnik",
@@ -19,12 +31,45 @@
         //"MapQuestOpen.OSM"
     ];
     var havething = 0;
+    //圖例
+    var legend = L.control({
+        position: 'bottomright'
+    });
+    legend.onAdd = function(map) {
+        var div = L.DomUtil.create('div', 'info legend'),
+            grades = [0, 10, 20, 50, 100, 200, 500, 1000],
+            labels = [];
+        // loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < 5; i++) {
+            div.innerHTML +=
+                '<div id="nunu"><i style="background:' + collist[i] + '"></i><span id="ss"> ' + coomlist[i] + '</span></div><br>';
+        }
+        return div;
+    };
+
+    legend.addTo(m);
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    var legend1 = L.control({
+        position: 'bottomleft'
+    });
+    legend1.onAdd = function(map) {
+        var divs = L.DomUtil.create('div', 'info legend'),
+            grades = [0, 10, 20, 50, 100, 200, 500, 1000],
+            labels = [];
+        // loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < 6; i++) {
+            divs.innerHTML +=
+                '<div><i id="hh" style="background:' + heatcolor[i] + '"></i><span id="sss">' + heatname[i] + '</span></div> <br>';
+        }
+        return divs;
+    };
+    legend1.addTo(m);
     //control 右上清單
     var lc = L.control.layers.provided(baseMaps).addTo(m);
     L.control.scale().addTo(m);
-    L.control.attribution({
-        prefix: cartodbAttribution
-    }).addTo(m);
+    // L.control.attribution({
+    //     prefix: cartodbAttribution
+    // }).addTo(m);
     var data = {},
         layers = {},
         fills = [
@@ -39,6 +84,7 @@
             "rgb(69, 117, 180)"
         ];
     d3.json("json/jpfinal.json", dealwithData);
+
     function dealwithData(oa) {
         data.json = oa.features.map(function(v) {
             return [v.geometry.coordinates[1], v.geometry.coordinates[0], v.properties.Name, v.properties.point];
@@ -50,13 +96,16 @@
                 placedic[t] = data.json[i][2];
             }
         }
-        points();
+        // allpath();
+        // points();
         clusters();
         bestroute();
-        allpath();
+
     }
+
     function allpath() {
         d3.json("json/allroute.json", pao);
+
         function pao(alro) {
             ss = alro.features.map(function(t) {
                 return [
@@ -68,9 +117,10 @@
                 'color': 'black',
                 'weight': '0.1'
             });
-            lc.addOverlay(layers.allpath, "allpath");
+            lc.addOverlay(layers.allpath, "五五六六");
         }
     }
+
     function points() {
         layers.points = L.layerGroup(data.json.map(function(v) {
             return L.circleMarker(L.latLng(v[0], v[1]), {
@@ -83,6 +133,7 @@
         }));
         lc.addOverlay(layers.points, "points");
     }
+
     function clusters() {
         layers.clusters = new L.MarkerClusterGroup();
         layers.clusters.addLayers(data.json.map(function(v) {
@@ -93,8 +144,9 @@
                 .bindPopup("<strong>" + v[2] + "</strong><br>" + "<strong>熱度</strong>:" + v[3] + "<br/>" + v[0] + "," + v[1]).openPopup();
         }));
         layers.clusters.on('click', fi);
-        lc.addOverlay(layers.clusters, "clusters");
+        lc.addOverlay(layers.clusters, "個別景點介紹");
     }
+
     function fi(ev) {
         var f = ev.originalEvent.path[0].alt;
         if (jawiki[f] != null) {
@@ -153,6 +205,7 @@
     //creat f2wiki dic
     var jawiki = {};
     d3.json("json/jawiki.json", f2wiki);
+
     function f2wiki(jw) {
         jawikilist = jw.ja.map(function(z) {
             return [z.Name, z.Value];
@@ -175,25 +228,28 @@
                     var p = properties.pop;
                     console.log(p === 0);
                     return {
-                        fillColor: (20 < p && p <= 50) ? '#9AD695' :
-                            (50 < p && p <= 100) ? '#FFFFBD' :
-                            (100 < p && p <= 200) ? '#FEDF8B' :
-                            (200 < p && p <= 500) ? '#FC8D5A' :
-                            (500 < p) ? '#D53F50' : '#E6F599',
+                        fillColor: (20 < p && p <= 50) ? '#FED976' :
+                            (50 < p && p <= 100) ? '#FEB24C' :
+                            (100 < p && p <= 200) ? '#FD8D3C' :
+                            (200 < p && p <= 500) ? '#FC4E2A' :
+                            (500 < p) ? '#E31A1C' : '#FFEDA0',
                         // '#A3007D' ,
-                        fillOpacity: 0.5,
-                        stroke: 0.1,
+                        // ['white','#FFFFBD','#E6F599','#FEDF8B','#FC8D5A','#D53F50'];
+                        fillOpacity: 0.8,
+                        stroke: 1,
+                        weight: 0.5,
                         fill: true,
                     }
                 }
             }
         });
-        lc.addOverlay(vectorGrid, "Heatmap");
+        lc.addOverlay(vectorGrid, "熱度圖");
     });
     //route ################################################################################################################
     function bestroute() {
         var dic = {};
         d3.json("json/superbigtable.json", hi);
+
         function hi(ih) {
             superbig = ih.features.map(function(z) {
                 return [
@@ -230,11 +286,12 @@
                     fillOpacity: 0.78,
                     clickable: true,
                     color: "#FF00FF"
-                }).bindPopup("<strong>" + v[2] + "</strong>").on('click', choose)
+                }).bindPopup("<strong>" + v[2] + "</strong>").on('click', choose).openPopup()
                 .bindTooltip("<strong>" + v[2] + "</strong><br>" + v[0] + "," + v[1]).openTooltip();
 
         }));
-        lc.addOverlay(layers.bestroute, "bestroute");
+        lc.addOverlay(layers.bestroute, "最佳路線推薦");
+
         function choose() {
             nowusing = this;
             var secondlayer = [];
@@ -244,8 +301,7 @@
                     if (m._layers[i].options.format == undefined && i > 7000) {
                         try {
                             m.removeLayer(m._layers[i]);
-                        } catch (e) {
-                        }
+                        } catch (e) {}
                     }
                 }
             }
@@ -351,13 +407,14 @@
                 alert("no route available");
             }
         }
+
         function showpath(ev) {
             var f = ev.originalEvents;
             var pathlist = this.getLatLngs();
-            $('#content').css("height", "15%");
+            $('#content').css("height", "20%");
             $('#route').append("所經路線<br/>");
             $('#route').css("height", "15%");
-            $('#article').css("height", "70%");
+            $('#article').css("height", "65%");
             if (yoo == 1) {
                 $('path[stroke="red"]').remove();
                 $('#route').empty();
@@ -404,6 +461,7 @@
                     $("#" + t + ">u").on('click', li);
                 }
             }
+
             function li(ev) {
                 var f = this.innerHTML;
                 console.log(jawiki[f]);
